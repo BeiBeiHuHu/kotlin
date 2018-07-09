@@ -66,7 +66,7 @@ class JsIrBackendContext(
 
     val coroutineContextProperty: PropertyDescriptor
         get() {
-            val vars = coroutinePackage.memberScope.getContributedVariables(
+            val vars = internalPackage.memberScope.getContributedVariables(
                 COROUTINE_CONTEXT_NAME,
                 NoLookupLocation.FROM_BACKEND
             )
@@ -131,11 +131,7 @@ class JsIrBackendContext(
                 get() = TODO("not implemented")
             override val copyRangeTo: Map<ClassDescriptor, IrSimpleFunctionSymbol>
                 get() = TODO("not implemented")
-            override val coroutineImpl = symbolTable.referenceClass(
-                getClass(
-                    coroutinePackageName.child(COROUTINE_IMPL_NAME)
-                )
-            )
+            override val coroutineImpl = symbolTable.referenceClass(getInternalClass(COROUTINE_IMPL_NAME.identifier))
             override val coroutineSuspendedGetter = symbolTable.referenceSimpleFunction(
                 coroutineIntrinsicsPackage.memberScope.getContributedVariables(COROUTINE_SUSPENDED_NAME, NoLookupLocation.FROM_BACKEND).single().getter!!
             )

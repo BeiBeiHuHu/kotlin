@@ -28,10 +28,7 @@ public suspend fun <T> suspendCoroutineUninterceptedOrReturn(block: (Continuatio
  */
 @SinceKotlin("1.2")
 @kotlin.internal.InlineOnly
-public inline fun <T> Continuation<T>.intercepted(): Continuation<T> {
-    val self = this
-    return js("self_0.get_facade()").unsafeCast<Continuation<T>>()
-}
+public inline fun <T> Continuation<T>.intercepted() = normalizeContinuation<T>(this)
 
 /**
  * This value is used as a return value of [suspendCoroutineOrReturn] `block` argument to state that
@@ -49,7 +46,8 @@ public inline fun <T> (suspend () -> T).startCoroutineUninterceptedOrReturn(
 ): Any? {
     val self_0 = this
     val cmpt_0 = completion
-    return js("self_0.invoke(cmpt_0)").unsafeCast<Any?>()
+    return js("self_0.invoke(cmpt_0)").unsafeCast()
+    // TODO: use clean version when function references is fixed
 //    return (this as Function1<Continuation<T>, Any?>).invoke(completion)
 }
 
@@ -110,8 +108,3 @@ private inline fun <T> buildContinuationByInvokeCall(
 
     return interceptContinuationIfNeeded(completion.context, continuation)
 }
-
-internal fun <T> interceptContinuationIfNeeded(
-    context: CoroutineContext,
-    continuation: Continuation<T>
-) = context[ContinuationInterceptor]?.interceptContinuation(continuation) ?: continuation
