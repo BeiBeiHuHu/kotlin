@@ -7,8 +7,11 @@ package kotlin.js
 
 import kotlin.coroutines.experimental.*
 
-internal external fun <T> getContinuation(): Continuation<T>
-internal external suspend fun <T> returnIfSuspended(@Suppress("UNUSED_PARAMETER") argument: Any?): T
+internal fun <T> getContinuation(): Continuation<T> { throw Exception("Implemented as intrinsic") }
+// Do we really need this intrinsic in JS?
+internal suspend fun <T> returnIfSuspended(@Suppress("UNUSED_PARAMETER") argument: Any?): T {
+    throw Exception("Implemented as intrinsic")
+}
 
 fun <T> normalizeContinuation(continuation: Continuation<T>): Continuation<T> =
     (continuation as? CoroutineImpl)?.facade ?: continuation
@@ -21,7 +24,7 @@ internal fun <T> interceptContinuationIfNeeded(
 
 @SinceKotlin("1.2")
 @Suppress("WRONG_MODIFIER_TARGET")
-public suspend  val coroutineContext: CoroutineContext
+public suspend val coroutineContext: CoroutineContext
     get() {
         throw Exception("Implemented as intrinsic")
     }
