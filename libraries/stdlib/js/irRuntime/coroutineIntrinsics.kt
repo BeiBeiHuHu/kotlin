@@ -20,8 +20,7 @@ public suspend inline fun <T> suspendCoroutineOrReturn(crossinline block: (Conti
  * Unlike [suspendCoroutineOrReturn] it does not intercept continuation.
  */
 @SinceKotlin("1.2")
-public suspend fun <T> suspendCoroutineUninterceptedOrReturn(block: (Continuation<T>) -> Any?): T =
-    js("block(arguments[arguments.length - 1])").unsafeCast<T>()
+public suspend /*inline*/ fun <T> suspendCoroutineUninterceptedOrReturn(/*crossinline */block: (Continuation<T>) -> Any?): T = block(getContinuation<T>()) as T
 
 /**
  * Intercept continuation with [ContinuationInterceptor].

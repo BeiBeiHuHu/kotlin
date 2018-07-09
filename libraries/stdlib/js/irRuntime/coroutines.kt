@@ -297,7 +297,7 @@ public constructor(
     }
 }
 
-public suspend inline fun <T> suspendCoroutine(crossinline block: (Continuation<T>) -> Unit): T =
+internal suspend inline fun <T> suspendCoroutine(crossinline block: (Continuation<T>) -> Unit): T =
     suspendCoroutineOrReturn { c: Continuation<T> ->
         val safe = SafeContinuation(c)
         block(safe)
