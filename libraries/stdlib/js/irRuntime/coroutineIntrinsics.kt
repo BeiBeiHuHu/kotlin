@@ -45,8 +45,8 @@ public inline fun <T> (suspend () -> T).startCoroutineUninterceptedOrReturn(
 ): Any? {
     val self_0 = this
     val cmpt_0 = completion
-    return js("self_0.invoke(cmpt_0)").unsafeCast()
-    // TODO: use clean version when function references is fixed
+    return js("self_0.invoke(cmpt_0)")
+    // TODO: use clean version once  function references is fixed
 //    return (this as Function1<Continuation<T>, Any?>).invoke(completion)
 }
 
@@ -57,7 +57,12 @@ public inline fun <R, T> (suspend R.() -> T).startCoroutineUninterceptedOrReturn
     receiver: R,
     completion: Continuation<T>
 ): Any? {
-    return (this as Function2<R, Continuation<T>, Any?>).invoke(receiver, completion)
+    val self_0 = this
+    val rec_0 = receiver
+    val cmpt_0 = completion
+    return js("self_0.invoke(rec_0, cmpt_0)")
+    // TODO: use clean version once function references is fixed
+//    return (this as Function2<R, Continuation<T>, Any?>).invoke(receiver, completion)
 }
 
 @SinceKotlin("1.1")
