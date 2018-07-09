@@ -1,4 +1,4 @@
-// IGNORE_BACKEND: JS_IR, JS
+// IGNORE_BACKEND: JS
 // WITH_RUNTIME
 // WITH_COROUTINES
 // COMMON_COROUTINES_TEST
@@ -14,8 +14,6 @@ class Controller {
         c.resume(value)
         COROUTINE_SUSPENDED
     }
-
-    suspend fun foo(s: String) { result += s }
 }
 
 fun builder(c: suspend Controller.() -> Unit): String {
@@ -56,7 +54,7 @@ fun box(): String {
                         val z = if (i3 == 0) "F" else "G"
                         ++i3
                         try {
-                            foo(z)
+                            result += suspendWithResult(z)
                             if (z == "G") {
                                 break
                             }
