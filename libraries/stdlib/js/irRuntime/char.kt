@@ -21,7 +21,7 @@ public class Char(value: Int) : Comparable<Char> {
     public override fun compareTo(other: Char): Int = value - other.value
 
     /** Adds the other Int value to this value resulting a Char. */
-    public operator fun plus(other: Int): Char = Char(value + other.value)
+    public operator fun plus(other: Int): Char = Char(value + other)
 
     /** Subtracts the other Char value from this value resulting an Int. */
     public operator fun minus(other: Char): Int = value - other.value

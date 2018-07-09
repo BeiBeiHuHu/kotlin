@@ -151,6 +151,38 @@ class IntrinsicifyCallsLowering(private val context: JsIrBackendContext) : FileL
                 op(type, OperatorNames.MOD, withLongCoercion(intrinsics.jsMod))
                 op(type, OperatorNames.REM, withLongCoercion(intrinsics.jsMod))
             }
+
+            for (type in arrayOf(irBuiltIns.byteType, irBuiltIns.intType)) {
+                op(type, ConversionNames.TO_CHAR) {
+                    irCall(it, intrinsics.charConstructor, dispatchReceiverAsFirstArgument = true)
+                }
+            }
+
+            for (type in arrayOf(irBuiltIns.floatType, irBuiltIns.doubleType)) {
+                op(type, ConversionNames.TO_CHAR) {
+                    IrCallImpl(
+                        it.startOffset,
+                        it.endOffset,
+                        irBuiltIns.charType,
+                        intrinsics.charConstructor
+                    ).apply {
+                        putValueArgument(0, irCall(it, intrinsics.jsNumberToInt, dispatchReceiverAsFirstArgument = true))
+                    }
+                }
+            }
+
+            op(irBuiltIns.charType, ConversionNames.TO_CHAR) { irCall(it, intrinsics.jsAsIs, dispatchReceiverAsFirstArgument = true) }
+
+            op(irBuiltIns.longType, ConversionNames.TO_CHAR) {
+                IrCallImpl(
+                    it.startOffset,
+                    it.endOffset,
+                    irBuiltIns.charType,
+                    intrinsics.charConstructor
+                ).apply {
+                    putValueArgument(0, it)
+                }
+            }
         }
 
         nameToIrTransformer.run {
@@ -209,11 +241,20 @@ class IntrinsicifyCallsLowering(private val context: JsIrBackendContext) : FileL
                     return IrCallImpl(
                         expression.startOffset,
                         expression.endOffset,
-                        context.intrinsics.longConstructor.owner.returnType,
+                        irBuiltIns.longType,
                         context.intrinsics.longConstructor
                     ).apply {
                         putValueArgument(0, JsIrBuilder.buildInt(context.irBuiltIns.intType, low))
                         putValueArgument(1, JsIrBuilder.buildInt(context.irBuiltIns.intType, high))
+                    }
+                } else if (expression.kind is IrConstKind.Char) {
+                    return IrCallImpl(
+                        expression.startOffset,
+                        expression.endOffset,
+                        irBuiltIns.charType,
+                        context.intrinsics.charConstructor
+                    ).apply {
+                        putValueArgument(0, JsIrBuilder.buildInt(context.irBuiltIns.intType, IrConstKind.Char.valueOf(expression).toInt()))
                     }
                 }
                 return super.visitConst(expression)
