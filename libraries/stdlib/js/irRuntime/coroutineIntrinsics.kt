@@ -5,8 +5,7 @@
 
 package kotlin.coroutines.experimental.intrinsics
 
-import kotlin.coroutines.experimental.Continuation
-import kotlin.coroutines.experimental.CoroutineImpl
+import kotlin.coroutines.experimental.*
 
 @SinceKotlin("1.1")
 @kotlin.internal.InlineOnly
@@ -69,12 +68,50 @@ public fun <R, T> (suspend R.() -> T).createCoroutineUnchecked(
     receiver: R,
     completion: Continuation<T>
 ): Continuation<Unit> {
-    return ((this as CoroutineImpl).create(receiver, completion) as CoroutineImpl).facade
+    return if (this !is CoroutineImpl) {
+        buildContinuationByInvokeCall(completion) {
+            @Suppress("UNCHECKED_CAST") (this as Function2<R, Continuation<T>, Any?>).invoke(receiver, completion)
+        }
+    } else {
+        (create(receiver, completion) as CoroutineImpl).facade
+    }
 }
 
 @SinceKotlin("1.1")
 public fun <T> (suspend () -> T).createCoroutineUnchecked(
     completion: Continuation<T>
 ): Continuation<Unit> {
-    return ((this as CoroutineImpl).create(completion) as CoroutineImpl).facade
+    return if (this !is CoroutineImpl) {
+        buildContinuationByInvokeCall(completion) {
+            @Suppress("UNCHECKED_CAST") (this as Function1<Continuation<T>, Any?>).invoke(completion)
+        }
+    } else {
+        (create(completion) as CoroutineImpl).facade
+    }
 }
+
+private inline fun <T> buildContinuationByInvokeCall(
+    completion: Continuation<T>,
+    crossinline block: () -> Any?
+): Continuation<Unit> {
+    val continuation =
+        object : Continuation<Unit> {
+            override val context: CoroutineContext
+                get() = completion.context
+
+            override fun resume(value: Unit) {
+                processBareContinuationResume(completion, block)
+            }
+
+            override fun resumeWithException(exception: Throwable) {
+                completion.resumeWithException(exception)
+            }
+        }
+
+    return interceptContinuationIfNeeded(completion.context, continuation)
+}
+
+internal fun <T> interceptContinuationIfNeeded(
+    context: CoroutineContext,
+    continuation: Continuation<T>
+) = context[ContinuationInterceptor]?.interceptContinuation(continuation) ?: continuation
